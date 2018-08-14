@@ -6,26 +6,23 @@ import com.codacy.docker.api.utils.{CommandResult, CommandRunner}
 import scala.util.Try
 import scala.xml.{NodeSeq, XML}
 
-final case class PHPMethod(name: String,
-                           filename: String,
-                           line: Option[Int],
-                           complexity: Option[Int],
-                           loc: Option[Int],
-                           cloc: Option[Int])
+final case class PHPMethod(filename: String, line: Option[Int], complexity: Option[Int])
 
-final case class PHPClass(name: String, filename: String, methods: Seq[PHPMethod], loc: Option[Int], cloc: Option[Int])
+final case class PHPClass(filename: String, methods: Seq[PHPMethod])
 
 final case class PHPFile(name: String,
                          classes: Seq[PHPClass],
                          functions: Seq[PHPMethod],
                          loc: Option[Int],
                          cloc: Option[Int]) {
-  lazy val allMethods: Seq[PHPMethod] = classes.flatMap(_.methods) ++ functions
-  lazy val nrOfMethods: Int = allMethods.length
-  lazy val nrOfClasses: Int = classes.length
-  lazy val complexity: Option[Int] =
+  private val allMethods: Seq[PHPMethod] = classes.flatMap(_.methods) ++ functions
+  val nrOfMethods: Int = allMethods.length
+  val nrOfClasses: Int = classes.length
+
+  val complexity: Option[Int] =
     Option(allMethods.flatMap(_.complexity)).filter(_.nonEmpty).map(_.max)
-  lazy val lineComplexities: Seq[LineComplexity] = for {
+
+  val lineComplexities: Seq[LineComplexity] = for {
     method <- allMethods
     line <- method.line
     cpx <- method.complexity
@@ -38,7 +35,9 @@ object Tool {
     for {
       fileOutputStr <- runTool(directory)
       xml <- Try(XML.loadString(fileOutputStr))
-      metrics <- parseMetrics(xml).toRight(new Exception("Could not parse XML returned from tool")).toTry
+      metrics <- parseMetrics(xml)
+        .toRight(new Exception("Could not parse XML returned from tool"))
+        .toTry
     } yield metrics
   }
 
@@ -47,15 +46,12 @@ object Tool {
   }
 
   private def runTool(directoryPath: String): Try[String] =
-    Try {
-      better.files.File
-        .temporaryFile()
-        .map { outputFile =>
-          baseCommand(outputFile.toJava.getAbsolutePath, directoryPath).toTry
-            .map(_ => outputFile.contentAsString)
-        }
-        .get
-    }.flatten
+    better.files.File
+      .temporaryFile()
+      .apply { outputFile =>
+        baseCommand(outputFile.toJava.getAbsolutePath, directoryPath).toTry
+          .map(_ => outputFile.contentAsString)
+      }
 
   private def parseLoc(node: NodeSeq): Option[Int] =
     Try((node \@ "eloc").toInt).toOption
@@ -72,61 +68,26 @@ object Tool {
   private def parseLine(node: NodeSeq): Option[Int] =
     Try((node \@ "start").toInt).toOption
 
-  private def parseClass(node: NodeSeq, packageName: Option[String]): Option[PHPClass] =
-    parseName(node \ "file").flatMap { filename =>
-      parseName(node).map { name =>
-        val packagePrefix = packageName
-          .map { p =>
-            s"$p."
-          }
-          .getOrElse("")
-        val className = s"$packagePrefix$name"
-
-        PHPClass(name = className,
-                 filename = filename,
-                 methods = (node \\ "method").flatMap(parseMethod(_, filename, Some(className))),
-                 loc = parseLoc(node),
-                 cloc = parseCloc(node))
-      }
+  private def parseClass(node: NodeSeq): Option[PHPClass] =
+    parseName(node \ "file").map { filename =>
+      PHPClass(filename = filename, methods = (node \\ "method").map(parseMethod(_, filename)))
     }
 
-  private def parseMethod(node: NodeSeq, filename: String, parentName: Option[String]): Option[PHPMethod] =
-    parseName(node).map { name =>
-      val classPrefix = parentName
-        .map { c =>
-          s"$c."
-        }
-        .getOrElse("")
-
-      PHPMethod(name = s"$classPrefix$name",
-                filename = filename,
-                line = parseLine(node),
-                complexity = parseCyclomaticComplexity(node),
-                loc = parseLoc(node),
-                cloc = parseCloc(node))
-    }
-
-  private def parseFile(node: NodeSeq): Option[PHPFile] = parseName(node).map { name =>
-    PHPFile(name = name, classes = Seq.empty, functions = Seq.empty, loc = parseLoc(node), cloc = parseCloc(node))
-  }
-
-  private def parsePackage(node: NodeSeq): Option[String] =
-    parseName(node).filter(_ != "+global")
+  private def parseMethod(node: NodeSeq, filename: String): PHPMethod =
+    PHPMethod(filename = filename, line = parseLine(node), complexity = parseCyclomaticComplexity(node))
 
   private def parseMetrics(node: NodeSeq): Option[Seq[PHPFile]] = {
-    val files = (node \\ "files" \\ "file").flatMap(parseFile)
+    val files = node \\ "files" \\ "file"
 
     (node \\ "package")
       .map { packageNode =>
-        val packageName = parsePackage(packageNode)
-
         val classes = (packageNode \\ "class").flatMap { classNode =>
-          parseClass(classNode, packageName)
+          parseClass(classNode)
         }
 
         val functions = (packageNode \\ "function").flatMap { functionNode =>
-          parseName(functionNode \ "file").flatMap { filename =>
-            parseMethod(functionNode, filename, packageName)
+          parseName(functionNode \ "file").map { filename =>
+            parseMethod(functionNode, filename)
           }
         }
 
@@ -137,11 +98,18 @@ object Tool {
           (accumClasses ++ classes, accumFunctions ++ functions)
       }
       .map {
-        case (classes, functions) =>
-          files.map { file =>
-            val fileClasses = classes.filter(_.filename == file.name)
-            val fileFunctions = functions.filter(_.filename == file.name)
-            file.copy(classes = fileClasses, functions = fileFunctions)
+        case (allClasses, allFunctions) =>
+          files.flatMap { fileNode =>
+            parseName(fileNode).map { fileName =>
+              val fileClasses = allClasses.filter(_.filename == fileName)
+              val fileFunctions = allFunctions.filter(_.filename == fileName)
+
+              PHPFile(name = fileName,
+                      classes = fileClasses,
+                      functions = fileFunctions,
+                      loc = parseLoc(fileNode),
+                      cloc = parseCloc(fileNode))
+            }
           }
       }
 
