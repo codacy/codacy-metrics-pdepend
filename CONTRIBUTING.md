@@ -2,7 +2,7 @@
 
 ## Main rules
 
-* Before you open a ticket or send a pull request, [search](https://github.com/codacy/codacy-metrics-radon/issues) for previous discussions about the same feature or issue. Add any new details to earlier tickets if you find any.
+* Before you open a ticket or send a pull request, [search](https://github.com/codacy/codacy-metrics-pdepend/issues) for previous discussions about the same feature or issue. Add any new details to earlier tickets if you find any.
 
 * If you're proposing a new feature, make sure you create an issue to let other contributors know what you will be working on.
 
@@ -14,7 +14,7 @@
 
 * Use `git rebase` (not `git merge`) to sync your work from time to time with the master branch.
 
-* After creating your pull request make sure the build is passing on [CircleCI](https://circleci.com/gh/codacy/codacy-metrics-radon) and that [Codacy](https://www.codacy.com/app/Codacy/codacy-metrics-radon) is also confident in the code quality.
+* After creating your pull request make sure the build is passing on [CircleCI](https://circleci.com/gh/codacy/codacy-metrics-pdepend) and that [Codacy](https://www.codacy.com/app/Codacy/codacy-metrics-pdepend) is also confident in the code quality.
 
 ## Commit Style
 

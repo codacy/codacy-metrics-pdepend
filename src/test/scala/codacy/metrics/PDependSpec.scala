@@ -35,5 +35,13 @@ class PDependSpec extends Specification {
         metrics.get must containTheSameElementsAs(expectedMetrics)
       }
     }
+
+    "not get metrics" in {
+      "wrong language" in {
+        val result = PDepend(srcDir, Some(Languages.Scala), None, Map.empty)
+
+        result must beFailedTry
+      }
+    }
   }
 }

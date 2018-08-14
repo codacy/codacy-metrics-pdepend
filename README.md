@@ -18,7 +18,7 @@ The docker is ran with the following command:
 
 ```bash
 docker run -it -v $srcDir:/src  <DOCKER_NAME>:<DOCKER_VERSION>
-docker run -it -v $PWD/src/test/resources:/src codacy/codacy-metrics-lizard:latest
+docker run -it -v $PWD/src/test/resources:/src codacy/codacy-metrics-pdepend:latest
 ```
 
 ## Test
