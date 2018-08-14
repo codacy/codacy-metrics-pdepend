@@ -33,7 +33,7 @@ object Tool {
 
   def runMetrics(directory: String): Try[Seq[PHPFile]] = {
     for {
-      fileOutputStr <- runTool(directory)
+      fileOutputStr <- run(directory)
       xml <- Try(XML.loadString(fileOutputStr))
       metrics <- parseMetrics(xml)
         .toRight(new Exception("Could not parse XML returned from tool"))
@@ -45,7 +45,7 @@ object Tool {
     CommandRunner.exec(List("php", "pdepend.phar", s"--summary-xml=$outfile", dir))
   }
 
-  private def runTool(directoryPath: String): Try[String] =
+  private def run(directoryPath: String): Try[String] =
     better.files.File
       .temporaryFile()
       .apply { outputFile =>
