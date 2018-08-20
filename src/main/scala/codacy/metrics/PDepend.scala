@@ -40,7 +40,9 @@ object PDepend extends MetricsTool {
       fileOutputStr <- run(directory)
       xml <- Try(XML.loadString(fileOutputStr))
       metrics <- parseMetrics(xml, directory, files)
-        .toRight(new Exception("Could not parse XML returned from tool"))
+        .toRight(new Exception(s"""Could not parse XML returned from tool:
+            |$fileOutputStr
+          """.stripMargin))
         .toTry
     } yield metrics
   }
