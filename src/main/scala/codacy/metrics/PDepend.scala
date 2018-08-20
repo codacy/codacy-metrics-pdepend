@@ -2,17 +2,23 @@ package codacy.metrics
 
 import better.files.File
 import codacy.docker.api.{MetricsConfiguration, Source}
-import codacy.docker.api.metrics.{FileMetrics, MetricsTool}
+import codacy.docker.api.metrics.{FileMetrics, LineComplexity, MetricsTool}
 import com.codacy.api.dtos.{Language, Languages}
+import com.codacy.docker.api.utils.{CommandResult, CommandRunner}
 
 import scala.util.{Failure, Try}
+import scala.xml.{Node, NodeSeq, XML}
+
+final case class PHPMethod(filename: String, line: Option[Int], complexity: Option[Int])
+
+final case class PHPClass(filename: String, methods: Seq[PHPMethod])
 
 object PDepend extends MetricsTool {
 
-  def apply(source: Source.Directory,
-            languageOpt: Option[Language],
-            files: Option[Set[Source.File]],
-            options: Map[MetricsConfiguration.Key, MetricsConfiguration.Value]): Try[List[FileMetrics]] = {
+  override def apply(source: Source.Directory,
+                     languageOpt: Option[Language],
+                     files: Option[Set[Source.File]],
+                     options: Map[MetricsConfiguration.Key, MetricsConfiguration.Value]): Try[List[FileMetrics]] = {
 
     languageOpt match {
       case Some(language) if language != Languages.PHP =>
@@ -25,28 +31,114 @@ object PDepend extends MetricsTool {
             File(source.path).listRecursively().filter(_.isRegularFile).toSet
         }
 
-        run(source.path, filesToAnalyse)
+        runMetrics(source.path, filesToAnalyse).map(_.toList)
     }
   }
 
-  private def run(directory: String, files: Set[File]): Try[List[FileMetrics]] = {
-    val maybePhpMetrics = Tool.runMetrics(directory)
+  def runMetrics(directory: String, files: Set[File]): Try[Seq[FileMetrics]] = {
+    for {
+      fileOutputStr <- run(directory)
+      xml <- Try(XML.loadString(fileOutputStr))
+      metrics <- parseMetrics(xml, directory, files)
+        .toRight(new Exception("Could not parse XML returned from tool"))
+        .toTry
+    } yield metrics
+  }
 
-    maybePhpMetrics.map { phpMetricsSeq =>
-      (for {
-        fileMetrics <- phpMetricsSeq
-        file <- files.find { ioFile =>
-          ioFile.toJava.getCanonicalPath == fileMetrics.name
-        }
-      } yield {
-        FileMetrics(filename = File(directory).relativize(file).toString,
-                    complexity = fileMetrics.complexity,
-                    nrClasses = Some(fileMetrics.nrOfClasses),
-                    nrMethods = Some(fileMetrics.nrOfMethods),
-                    loc = fileMetrics.loc,
-                    cloc = fileMetrics.cloc,
-                    lineComplexities = fileMetrics.lineComplexities.to[Set])
-      }).toList
+  private def baseCommand(outfile: String, dir: String): Either[Throwable, CommandResult] = {
+    CommandRunner.exec(List("php", "pdepend.phar", s"--summary-xml=$outfile", dir))
+  }
+
+  private def run(directoryPath: String): Try[String] =
+    better.files.File
+      .temporaryFile()
+      .apply { outputFile =>
+        baseCommand(outputFile.toJava.getAbsolutePath, directoryPath).toTry
+          .map(_ => outputFile.contentAsString)
+      }
+
+  private def parseLoc(node: NodeSeq): Option[Int] =
+    Try((node \@ "eloc").toInt).toOption
+
+  private def parseCloc(node: NodeSeq): Option[Int] =
+    Try((node \@ "cloc").toInt).toOption
+
+  private def parseCyclomaticComplexity(node: NodeSeq): Option[Int] =
+    Try((node \@ "ccn").toInt).toOption
+
+  private def parseName(node: NodeSeq): Option[String] =
+    Try(node \@ "name").toOption
+
+  private def parseLine(node: NodeSeq): Option[Int] =
+    Try((node \@ "start").toInt).toOption
+
+  private def parseClass(node: NodeSeq): Option[PHPClass] =
+    parseName(node \ "file").map { filename =>
+      PHPClass(filename = filename, methods = (node \\ "method").map(parseMethod(_, filename)))
     }
+
+  private def parseMethod(node: NodeSeq, filename: String): PHPMethod =
+    PHPMethod(filename = filename, line = parseLine(node), complexity = parseCyclomaticComplexity(node))
+
+  private def parseMetrics(node: NodeSeq, directory: String, fileSet: Set[File]): Option[Seq[FileMetrics]] = {
+    val files = node \\ "files" \\ "file"
+
+    val packageNodeSeq = node \\ "package"
+
+    val classesAndMethodsSeq: Seq[(Seq[PHPClass], Seq[PHPMethod])] = packageNodeSeq.map { packageNode =>
+      val classes = (packageNode \\ "class").flatMap(parseClass(_))
+
+      val functions = for {
+        functionNode <- packageNode \\ "function"
+        filename <- parseName(functionNode \ "file")
+      } yield parseMethod(functionNode, filename)
+
+      (classes, functions)
+    }
+
+    val classesAndMethods: Option[(Seq[PHPClass], Seq[PHPMethod])] =
+      classesAndMethodsSeq.reduceOption[(Seq[PHPClass], Seq[PHPMethod])] {
+        case ((accumClasses, accumFunctions), (classes, functions)) =>
+          (accumClasses ++ classes, accumFunctions ++ functions)
+      }
+
+    val fileMetricsSeq: Option[Seq[FileMetrics]] = classesAndMethods.map {
+      case (allClasses, allFunctions) =>
+        for {
+          fileNode <- files
+          fileName <- parseName(fileNode)
+          if fileSet.exists(_.toJava.getCanonicalPath == fileName)
+        } yield fileMetrics(allClasses, allFunctions, fileName, directory, fileNode)
+    }
+
+    fileMetricsSeq
+  }
+
+  private def fileMetrics(allClasses: Seq[PHPClass],
+                          allFunctions: Seq[PHPMethod],
+                          fileName: String,
+                          directory: String,
+                          fileNode: Node): FileMetrics = {
+    val fileClasses = allClasses.filter(_.filename == fileName)
+    val fileFunctions = allFunctions.filter(_.filename == fileName)
+
+    val allMethods = fileClasses.flatMap(_.methods) ++ fileFunctions
+
+    val lineComplexities: Seq[LineComplexity] = for {
+      method <- allMethods
+      line <- method.line
+      cpx <- method.complexity
+    } yield LineComplexity(line, cpx)
+
+    val complexity: Option[Int] =
+      Option(allMethods.flatMap(_.complexity)).filter(_.nonEmpty).map(_.max)
+
+    FileMetrics(filename = File(directory).relativize(File(fileName)).toString,
+                complexity = complexity,
+                nrClasses = Some(fileClasses.length),
+                nrMethods = Some(allMethods.length),
+                loc = parseLoc(fileNode),
+                cloc = parseCloc(fileNode),
+                lineComplexities = lineComplexities.to[Set])
   }
 }
