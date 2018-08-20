@@ -7,7 +7,7 @@ import com.codacy.api.dtos.{Language, Languages}
 import com.codacy.docker.api.utils.{CommandResult, CommandRunner}
 
 import scala.util.{Failure, Try}
-import scala.xml.{Node, NodeSeq, XML}
+import scala.xml.{Node, NodeSeq}
 
 final case class PHPMethod(filename: String, line: Option[Int], complexity: Option[Int])
 
@@ -31,11 +31,11 @@ object PDepend extends MetricsTool {
             File(source.path).listRecursively().filter(_.isRegularFile).toSet
         }
 
-        runMetrics(source.path, filesToAnalyse).map(_.toList)
+        runMetrics(source.path, filesToAnalyse)
     }
   }
 
-  def runMetrics(directory: String, files: Set[File]): Try[Seq[FileMetrics]] = {
+  def runMetrics(directory: String, files: Set[File]): Try[List[FileMetrics]] = {
     for {
       fileOutputStr <- run(directory)
       xml <- Try(XML.loadString(fileOutputStr))
@@ -80,7 +80,7 @@ object PDepend extends MetricsTool {
   private def parseMethod(node: NodeSeq, filename: String): PHPMethod =
     PHPMethod(filename = filename, line = parseLine(node), complexity = parseCyclomaticComplexity(node))
 
-  private def parseMetrics(node: NodeSeq, directory: String, fileSet: Set[File]): Option[Seq[FileMetrics]] = {
+  private def parseMetrics(node: NodeSeq, directory: String, fileSet: Set[File]): Option[List[FileMetrics]] = {
     val files = node \\ "files" \\ "file"
 
     val packageNodeSeq = node \\ "package"
@@ -102,16 +102,18 @@ object PDepend extends MetricsTool {
           (accumClasses ++ classes, accumFunctions ++ functions)
       }
 
-    val fileMetricsSeq: Option[Seq[FileMetrics]] = classesAndMethods.map {
+    val fileMetricsList: Option[List[FileMetrics]] = classesAndMethods.map {
       case (allClasses, allFunctions) =>
-        for {
+        val metricsList: List[FileMetrics] = (for {
           fileNode <- files
           fileName <- parseName(fileNode)
           if fileSet.exists(_.toJava.getCanonicalPath == fileName)
-        } yield fileMetrics(allClasses, allFunctions, fileName, directory, fileNode)
+        } yield fileMetrics(allClasses, allFunctions, fileName, directory, fileNode))(collection.breakOut)
+
+        metricsList
     }
 
-    fileMetricsSeq
+    fileMetricsList
   }
 
   private def fileMetrics(allClasses: Seq[PHPClass],
