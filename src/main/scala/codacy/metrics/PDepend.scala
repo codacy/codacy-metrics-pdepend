@@ -1,10 +1,10 @@
 package codacy.metrics
 
 import better.files.File
-import codacy.docker.api.{MetricsConfiguration, Source}
-import codacy.docker.api.metrics.{FileMetrics, LineComplexity, MetricsTool}
-import com.codacy.api.dtos.{Language, Languages}
 import com.codacy.docker.api.utils.{CommandResult, CommandRunner}
+import com.codacy.plugins.api.languages.{Language, Languages}
+import com.codacy.plugins.api.metrics.{FileMetrics, LineComplexity, MetricsTool}
+import com.codacy.plugins.api.{Options, Source}
 
 import scala.util.{Failure, Try}
 import scala.xml.{Node, NodeSeq}
@@ -16,13 +16,13 @@ final case class PHPClass(filename: String, methods: Seq[PHPMethod])
 object PDepend extends MetricsTool {
 
   override def apply(source: Source.Directory,
-                     languageOpt: Option[Language],
+                     language: Option[Language],
                      files: Option[Set[Source.File]],
-                     options: Map[MetricsConfiguration.Key, MetricsConfiguration.Value]): Try[List[FileMetrics]] = {
+                     options: Map[Options.Key, Options.Value]): Try[List[FileMetrics]] = {
 
-    languageOpt match {
-      case Some(language) if language != Languages.PHP =>
-        Failure(new Exception(s"Tried to run PDepend metrics with language: $language. Only PHP supported."))
+    language match {
+      case Some(lang) if lang != Languages.PHP =>
+        Failure(new Exception(s"Tried to run PDepend metrics with language: $lang. Only PHP supported."))
       case _ =>
         val filesToAnalyse: Set[File] = files match {
           case Some(filesSpecified) =>

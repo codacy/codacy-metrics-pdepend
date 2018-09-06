@@ -1,7 +1,7 @@
 package codacy.metrics
 
-import scala.xml.{Elem, SAXParser}
 import scala.xml.factory.XMLLoader
+import scala.xml.{Elem, SAXParser}
 
 object XML extends XMLLoader[Elem] {
   override def parser: SAXParser = {
