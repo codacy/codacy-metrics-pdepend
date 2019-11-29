@@ -38,7 +38,7 @@ object PDepend extends MetricsTool {
   def runMetrics(directory: String, files: Set[File]): Try[List[FileMetrics]] = {
     for {
       fileOutputStr <- run(directory)
-      xml <- Try(XML.loadString(fileOutputStr))
+      xml <- Try(scala.xml.XML.loadString(fileOutputStr))
       metrics <- parseMetrics(xml, directory, files)
         .toRight(new Exception(s"""Could not parse XML returned from tool:
             |$fileOutputStr
@@ -106,13 +106,13 @@ object PDepend extends MetricsTool {
 
     val fileMetricsList: Option[List[FileMetrics]] = classesAndMethods.map {
       case (allClasses, allFunctions) =>
-        val metricsList: List[FileMetrics] = (for {
-          fileNode <- files
+        val metricsView = for {
+          fileNode <- files.view
           fileName <- parseName(fileNode)
           if fileSet.exists(_.toJava.getCanonicalPath == fileName)
-        } yield fileMetrics(allClasses, allFunctions, fileName, directory, fileNode))(collection.breakOut)
+        } yield fileMetrics(allClasses, allFunctions, fileName, directory, fileNode)
 
-        metricsList
+        metricsView.to(List)
     }
 
     fileMetricsList
@@ -124,11 +124,11 @@ object PDepend extends MetricsTool {
                           directory: String,
                           fileNode: Node): FileMetrics = {
     val fileClasses = allClasses.filter(_.filename == fileName)
-    val fileFunctions = allFunctions.filter(_.filename == fileName)
+    val fileFunctions = allFunctions.view.filter(_.filename == fileName)
 
     val allMethods = fileClasses.flatMap(_.methods) ++ fileFunctions
 
-    val lineComplexities: Seq[LineComplexity] = for {
+    val lineComplexities = for {
       method <- allMethods
       line <- method.line
       cpx <- method.complexity
@@ -143,6 +143,6 @@ object PDepend extends MetricsTool {
                 nrMethods = Some(allMethods.length),
                 loc = parseLoc(fileNode),
                 cloc = parseCloc(fileNode),
-                lineComplexities = lineComplexities.to[Set])
+                lineComplexities = lineComplexities.toSet)
   }
 }

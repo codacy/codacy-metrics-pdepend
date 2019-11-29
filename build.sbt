@@ -1,35 +1,46 @@
-import sbt.Keys._
-import sbt._
+import com.typesafe.sbt.packager.docker.{Cmd, DockerAlias}
 
-val scalaBinaryVersionNumber = "2.12"
-val scalaVersionNumber = s"$scalaBinaryVersionNumber.4"
+enablePlugins(JavaAppPackaging)
+enablePlugins(DockerPlugin)
+organization := "com.codacy"
+scalaVersion := "2.13.1"
+name := "codacy-metrics-pdepend"
+// App Dependencies
+libraryDependencies ++= Seq("com.codacy" %% "codacy-metrics-scala-seed" % "0.2.0",
+                            "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
+                            "org.specs2" %% "specs2-core" % "4.8.0" % Test)
 
-lazy val codacyMetricsPDepend = project
-  .in(file("."))
-  .enablePlugins(JavaAppPackaging)
-  .enablePlugins(DockerPlugin)
-  .settings(
-    inThisBuild(
-      List(
-        organization := "com.codacy",
-        scalaVersion := scalaVersionNumber,
-        version := "0.1.0-SNAPSHOT",
-        resolvers := Seq("Sonatype OSS Snapshots".at("https://oss.sonatype.org/content/repositories/releases")) ++ resolvers.value,
-        scalacOptions ++= Common.compilerFlags,
-        scalacOptions in Test ++= Seq("-Yrangepos"),
-        scalacOptions in (Compile, console) --= Seq("-Ywarn-unused:imports",
-                                                    "-Xfatal-warnings")
-      )
-    ),
-    name := "codacy-metrics-pdepend",
-    // App Dependencies
-    libraryDependencies ++= Seq(Dependencies.Codacy.metricsSeed),
-    // Test Dependencies
-    libraryDependencies ++= Seq(Dependencies.specs2).map(_ % Test)
-  )
-  .settings(Common.dockerSettings: _*)
+mappings in Universal ++= {
+  (resourceDirectory in Compile).map { resourceDir: File =>
+    val src = resourceDir / "docs"
+    val dest = "/docs"
 
-scalaVersion in ThisBuild := scalaVersionNumber
-scalaBinaryVersion in ThisBuild := scalaBinaryVersionNumber
+    for {
+      path <- src.allPaths.get if !path.isDirectory
+    } yield path -> path.toString.replaceFirst(src.toString, dest)
+  }
+}.value ++ Seq(
 
-scapegoatVersion in ThisBuild := "1.3.5"
+)
+
+Docker / packageName := packageName.value
+dockerBaseImage := "openjdk:8-jre-alpine"
+Docker / daemonUser := "docker"
+Docker / daemonGroup := "docker"
+dockerEntrypoint := Seq(s"/opt/docker/bin/${name.value}")
+
+val pDependVersion = scala.io.Source.fromFile(".pdepend-version").mkString.trim
+dockerCommands := dockerCommands.value.flatMap {
+  case cmd @ Cmd("ADD", _) =>
+    Seq(Cmd("RUN", "adduser -u 2004 -D docker"),
+        cmd,
+        Cmd("RUN", s"""apk update &&
+                      |apk --no-cache add bash curl php php-tokenizer php-xml php-cli php-pdo
+                      |               php-curl php-json php-iconv php-phar php-ctype php-openssl php-dom""".stripMargin.replaceAll(System.lineSeparator(), " ")),
+        Cmd("RUN", s"""apk --no-cache add composer &&
+                      |composer global require pdepend/pdepend &&
+                      |rm -rf /tmp/*""".stripMargin.replaceAll(System.lineSeparator(), " ")),
+        Cmd("RUN", "mv /opt/docker/docs /docs"))
+
+  case other => Seq(other)
+}
