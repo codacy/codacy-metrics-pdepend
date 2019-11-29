@@ -48,7 +48,7 @@ object PDepend extends MetricsTool {
   }
 
   private def baseCommand(outfile: String, dir: String): Either[Throwable, CommandResult] = {
-    CommandRunner.exec(List("php", "pdepend.phar", s"--summary-xml=$outfile", dir))
+    CommandRunner.exec(List("php", "vendor/bin/pdepend", s"--summary-xml=$outfile", dir))
   }
 
   private def run(directoryPath: String): Try[String] =
