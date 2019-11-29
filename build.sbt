@@ -36,9 +36,8 @@ dockerCommands := dockerCommands.value.flatMap {
         cmd,
         Cmd("RUN", s"""apk update &&
                       |apk --no-cache add bash curl php php-tokenizer php-xml php-cli php-pdo
-                      |               php-curl php-json php-iconv php-phar php-ctype php-openssl php-dom""".stripMargin.replaceAll(System.lineSeparator(), " ")),
-        Cmd("RUN", s"""apk --no-cache add composer &&
-                      |composer global require pdepend/pdepend &&
+                      |               php-curl php-json php-iconv php-phar php-ctype php-openssl php-dom composer &&
+                      |composer require pdepend/pdepend:$pDependVersion &&
                       |rm -rf /tmp/*""".stripMargin.replaceAll(System.lineSeparator(), " ")),
         Cmd("RUN", "mv /opt/docker/docs /docs"))
 
