@@ -107,26 +107,6 @@ function filesToNrMethods($result)
     return $res;
 }
 
-function filesToLocs($result)
-{
-    $res = new Map();
-    foreach ($result as $node) {
-        foreach ($node->getClasses() as $class) {
-            $file = getFilename($class);
-            if ($res->hasKey($file)) $res[$file] += $class->getMethods()->count();
-            else $res[$file] = $class->getMethods()->count();
-        }
-        foreach ($node->getFunctions() as $function) {
-            $file = getFilename($function);
-            if ($res->hasKey($file)) $res[$file] += 1;
-            else $res[$file] = 1;
-        }
-    }
-    return $res;
-}
-function filesToClocs($result)
-{ }
-
 function resultToContentMap($result)
 {
     $content_map = new Map();
@@ -160,8 +140,6 @@ try {
 
     $filesToNrClasses = filesToNrClasses($result);
     $filesToNrMethods = filesToNrMethods($result);
-    $filesToLocs = filesToLocs($result);
-    $filesToClocs = filesToClocs($result);
 
     $files = $filesToNrClasses->keys()->union($filesToNrMethods->keys());
 
