@@ -89,6 +89,19 @@ function contentMapToFileComplexities($content_map, $cyclomaticAnalyzer)
     return $res;
 }
 
+function filesToNrClasses($result)
+{
+    $res = new Map();
+    foreach ($result as $node) {
+        foreach ($node->getClasses() as $class) {
+            $file = getFilename($class);
+            if ($res->hasKey($file)) $res[$file]++;
+            else $res[$file] = 1;
+        }
+    }
+    return $res;
+}
+
 function filesToNrMethods($result)
 {
     $res = new Map();

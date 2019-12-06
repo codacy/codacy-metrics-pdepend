@@ -7,8 +7,5 @@
     "psr-4": {
       "CodacyPDepend\\": "src/main/php/CodacyPDepend"
     }
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^8.4"
   }
 }
