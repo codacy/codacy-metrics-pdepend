@@ -147,7 +147,6 @@ try {
     addFilesFromConfiguration($engine);
     $result = $engine->analyze();
     $cyclomaticAnalyzer = $codacyReportGenerator->getCyclomaticComplexityAnalyzer();
-    $cyclomaticAnalyzer = $codacyReportGenerator->getCyclomaticComplexityAnalyzer();
     $content_map = resultToContentMap($result);
     $fileToLineComplexities = contentMapToFileComplexities($content_map, $cyclomaticAnalyzer);
 
