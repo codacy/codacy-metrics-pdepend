@@ -173,7 +173,7 @@ try {
         $codacyResult = new CodacyResult($fileRelativeToSrc, $complexity, $nrMethods, $nrClasses, $fileToLineComplexities[$file]);
         print(json_encode($codacyResult, JSON_UNESCAPED_SLASHES) . PHP_EOL);
     }
-} catch (Exception $e) {
+} catch (\Exception $e) {
     echo ($e->getMessage() . PHP_EOL);
     echo ($e->getTraceAsString() . PHP_EOL);
     exit(1);
