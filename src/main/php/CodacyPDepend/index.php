@@ -64,10 +64,10 @@ function filenameToMethods($node)
     return $map;
 }
 
-function contentMapToFileComplexities($content_map, $cyclomaticAnalyzer)
+function contentMapToFileComplexities($contentMap, $cyclomaticAnalyzer)
 {
     $res = new Map();
-    foreach ($content_map as $file => $nodes) {
+    foreach ($contentMap as $file => $nodes) {
         $res[$file] = array();
         foreach ($nodes as $node) {
             $ccn = $cyclomaticAnalyzer->getCcn($node);
@@ -111,15 +111,15 @@ function filesToNrMethods($result)
 
 function resultToContentMap($result)
 {
-    $content_map = new Map();
+    $contentMap = new Map();
     foreach ($result as $node) {
         $files_to_methods = filenameToMethods($node);
         $files_to_functions = filenameToFunctions($node);
         foreach (array($files_to_methods, $files_to_functions) as $map) {
-            mergeMapsOfArrays($content_map, $map);
+            mergeMapsOfArrays($contentMap, $map);
         }
     }
-    return $content_map;
+    return $contentMap;
 }
 
 function stripStringPrefix($str, $prefix)
@@ -136,8 +136,8 @@ try {
     addFilesFromConfiguration($engine);
     $result = $engine->analyze();
     $cyclomaticAnalyzer = $codacyReportGenerator->getCyclomaticComplexityAnalyzer();
-    $content_map = resultToContentMap($result);
-    $fileToLineComplexities = contentMapToFileComplexities($content_map, $cyclomaticAnalyzer);
+    $contentMap = resultToContentMap($result);
+    $fileToLineComplexities = contentMapToFileComplexities($contentMap, $cyclomaticAnalyzer);
 
     $filesToNrClasses = filesToNrClasses($result);
     $filesToNrMethods = filesToNrMethods($result);
