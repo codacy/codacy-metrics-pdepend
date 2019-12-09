@@ -24,9 +24,9 @@ function genericMap($f, $list)
 function pushToMapValueArray($map, $key, $value)
 {
     if ($map->hasKey($key)) {
-        $map[$key] = array_push($map[$key], $value);
+        array_push($map[$key], $value);
     } else {
-        $map[$key] = [$value];
+        $map[$key] = array($value);
     }
 }
 
@@ -39,10 +39,10 @@ function concatMapValueArray($map, $key, $array)
     }
 }
 
-function mergeMapsOfArrays($res, $other, $f)
+function mergeMapsOfArrays($res, $other)
 {
     foreach ($other as $key => $value) {
-        concatMapValueArray($res, $key, genericMap($f, $value));
+        concatMapValueArray($res, $key, $value);
     }
 }
 
@@ -53,13 +53,13 @@ function getFilename($content)
 }
 
 function filenameToFunctions($node)
-
 {
     $map = new Map();
-    foreach ($node->getFunctions() as $content) {
-        $key = getFilename($content);
-        pushToMapValueArray($map, $key, $content);
+    foreach ($node->getFunctions() as $function) {
+        $key = getFilename($function);
+        pushToMapValueArray($map, $key, $function);
     }
+
     return $map;
 }
 
@@ -127,7 +127,7 @@ function resultToContentMap($result)
         $files_to_methods = filenameToMethods($node);
         $files_to_functions = filenameToFunctions($node);
         foreach (array($files_to_methods, $files_to_functions) as $map) {
-            mergeMapsOfArrays($content_map, $map, fn ($e) => $e);
+            mergeMapsOfArrays($content_map, $map);
         }
     }
     return $content_map;
@@ -174,7 +174,7 @@ try {
         print(json_encode($codacyResult, JSON_UNESCAPED_SLASHES) . PHP_EOL);
     }
 } catch (\Exception $e) {
-    echo ($e->getMessage() . PHP_EOL);
-    echo ($e->getTraceAsString() . PHP_EOL);
+    print($e->getMessage() . PHP_EOL);
+    print($e->getTraceAsString() . PHP_EOL);
     exit(1);
 }

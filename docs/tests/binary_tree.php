@@ -1,6 +1,8 @@
 <?php
+// #Metrics: {"complexity": 4, "nrMethods": 2, "nrClasses": 1}
 class BinaryTree
 {
+    // #LineComplexity: 2
     public function insert($item)
     {
         $node = new BinaryNode($item);
@@ -12,7 +14,7 @@ class BinaryTree
             $this->insertNode($node, $this->root);
         }
     }
-
+    // #LineComplexity: 4
     protected function insertNode($node, &$subtree)
     {
         if ($subtree === null) {

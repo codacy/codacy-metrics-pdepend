@@ -5,11 +5,11 @@ WORKDIR /workdir
 RUN apk add composer
 
 COPY composer.json composer.json
+RUN composer install
 
 RUN adduser -u 2004 -D docker
 COPY docs /docs
 RUN chown -R docker:docker . /docs
-RUN composer install
 
 USER docker
 
