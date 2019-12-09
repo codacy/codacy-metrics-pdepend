@@ -12,15 +12,6 @@ use PDepend\Application;
 use Ds\Map;
 use LineComplexity;
 
-function genericMap($f, $list)
-{
-    $res = array();
-    foreach ($list as $e) {
-        array_push($res, $f($e));
-    }
-    return $res;
-}
-
 function pushToMapValueArray($map, $key, $value)
 {
     if ($map->hasKey($key)) {
@@ -77,14 +68,12 @@ function contentMapToFileComplexities($content_map, $cyclomaticAnalyzer)
 {
     $res = new Map();
     foreach ($content_map as $file => $nodes) {
-        $res[$file] = genericMap(
-            function ($node) use ($cyclomaticAnalyzer) {
-                $ccn = $cyclomaticAnalyzer->getCcn($node);
-                $line = $node->getStartLine();
-                return new LineComplexity($line, $ccn);
-            },
-            $nodes
-        );
+        $res[$file] = array();
+        foreach ($nodes as $node) {
+            $ccn = $cyclomaticAnalyzer->getCcn($node);
+            $line = $node->getStartLine();
+            array_push($res[$file], new LineComplexity($line, $ccn));
+        }
     }
     return $res;
 }
@@ -159,7 +148,7 @@ try {
         $lineComplexities = $fileToLineComplexities->hasKey($file) ?
             $fileToLineComplexities[$file] : array();
 
-        $complexity = empty($lineComplexities) ? 0 : max(genericMap(
+        $complexity = empty($lineComplexities) ? 0 : max(array_map(
             fn ($lineComplexity) => $lineComplexity->getValue(),
             $lineComplexities
         ));
