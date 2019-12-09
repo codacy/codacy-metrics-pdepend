@@ -1,10 +1,8 @@
 <?php
 
-namespace CodacyPDepend;
+namespace Codacy\PDepend;
 
 use PDepend\Engine;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 
 function stringEndsWith($str, $test)
 {
@@ -13,7 +11,7 @@ function stringEndsWith($str, $test)
 
 function addDirectoryRecursively(Engine $engine, string $dir)
 {
-    $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
+    $rii = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
     foreach ($rii as $file) {
         if ($file->isDir()) {
             continue;

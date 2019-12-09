@@ -1,6 +1,6 @@
 <?php
 
-namespace CodacyPDepend;
+namespace Codacy\PDepend;
 
 use PDepend\Metrics\Analyzer;
 use PDepend\Metrics\Analyzer\CyclomaticComplexityAnalyzer;

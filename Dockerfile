@@ -17,9 +17,9 @@ RUN chown -R docker:docker . /docs
 
 USER docker
 
-COPY src src
 COPY --from=builder vendor vendor
+COPY src src
 
 ENTRYPOINT [ "php", "-d", "memory_limit=-1" ]
 
-CMD [ "src/main/php/CodacyPDepend/index.php" ]
+CMD [ "src/index.php" ]

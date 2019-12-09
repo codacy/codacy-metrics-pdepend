@@ -1,5 +1,7 @@
 <?php
 
+namespace Codacy\PDepend;
+
 class LineComplexity implements \JsonSerializable
 {
     private $line;
