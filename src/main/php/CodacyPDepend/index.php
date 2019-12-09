@@ -12,15 +12,6 @@ use PDepend\Application;
 use Ds\Map;
 use LineComplexity;
 
-function pushToMapValueArray($map, $key, $value)
-{
-    if ($map->hasKey($key)) {
-        array_push($map[$key], $value);
-    } else {
-        $map[$key] = array($value);
-    }
-}
-
 function concatMapValueArray($map, $key, $array)
 {
     if ($map->hasKey($key)) {
@@ -48,7 +39,11 @@ function filenameToFunctions($node)
     $map = new Map();
     foreach ($node->getFunctions() as $function) {
         $key = getFilename($function);
-        pushToMapValueArray($map, $key, $function);
+        if ($map->hasKey($key)) {
+            array_push($map[$key], $function);
+        } else {
+            $map[$key] = array($function);
+        }
     }
 
     return $map;
