@@ -5,6 +5,7 @@ FROM php:$PHP_IMAGE_VERSION as builder
 RUN apk add composer
 
 COPY composer.json composer.json
+COPY composer.lock composer.lock
 RUN composer install
 
 FROM php:$PHP_IMAGE_VERSION
