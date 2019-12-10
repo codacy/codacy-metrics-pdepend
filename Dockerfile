@@ -7,14 +7,18 @@ RUN apk add composer
 COPY composer.json composer.json
 COPY composer.lock composer.lock
 RUN composer install
+COPY src src
+COPY tests tests
+
+RUN ./vendor/bin/phpunit tests
+
+RUN composer install --no-dev
 
 FROM php:$PHP_IMAGE_VERSION
 WORKDIR /workdir
-
 RUN adduser -u 2004 -D docker
 COPY docs /docs
 RUN chown -R docker:docker . /docs
-
 USER docker
 
 COPY --from=builder vendor vendor
