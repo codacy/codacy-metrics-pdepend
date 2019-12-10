@@ -4,11 +4,13 @@ namespace Codacy\PDepend;
 
 require_once __DIR__ . '/../src/CodacyPDepend.php';
 
+use PDepend\Metrics\Analyzer\CyclomaticComplexityAnalyzer;
 use PDepend\Source\AST\ASTClass;
 use PDepend\Source\AST\ASTCompilationUnit;
 use PDepend\Source\AST\ASTFunction;
 use PDepend\Source\AST\ASTMethod;
 use PDepend\Source\AST\ASTNamespace;
+use PDepend\Source\AST\ASTNode;
 use PHPUnit\Framework\TestCase;
 
 final class CodacyPDependTest extends TestCase
@@ -89,14 +91,15 @@ final class CodacyPDependTest extends TestCase
         $this->assertEquals($expectedResult, $resultWithFunctionNames);
     }
 
+    function createMethod($name)
+    {
+        $method = $this->createMock(ASTMethod::class);
+        $method->method('getName')->willReturn($name);
+        return $method;
+    }
+
     function testFilenameToMethods()
     {
-        $createMethod = function ($name) {
-            $method = $this->createMock(ASTMethod::class);
-            $method->method('getName')->willReturn($name);
-            return $method;
-        };
-
         $createClass = function ($methods, $filename) {
             $compilationUnit = $this->createMock(ASTCompilationUnit::class);
             $compilationUnit->method('getFileName')->willReturn($filename);
@@ -111,9 +114,9 @@ final class CodacyPDependTest extends TestCase
         $m1 = 'm1';
         $m2 = 'm2';
         $m3 = 'm3';
-        $method1 = $createMethod($m1);
-        $method2 = $createMethod($m2);
-        $method3 = $createMethod($m3);
+        $method1 = $this->createMethod($m1);
+        $method2 = $this->createMethod($m2);
+        $method3 = $this->createMethod($m3);
         $class1 = $createClass(array($method1, $method2), $file1);
         $class2 = $createClass(array($method3), $file2);
         $astNamespaceMock = $this->createMock(ASTNamespace::class);
@@ -133,5 +136,34 @@ final class CodacyPDependTest extends TestCase
             $result
         );
         $this->assertEquals($expectedResult, $resultWithMethodNames);
+    }
+
+    function testContentToFileComplexities()
+    {
+        $ccn = 1.0;
+        $cyclomaticAnalyzer = $this->createMock(CyclomaticComplexityAnalyzer::class);
+        $cyclomaticAnalyzer->method('getCcn')->withAnyParameters()->willReturn($ccn);
+
+        $createNode = function ($class, $line) {
+            $node = $this->createMock($class);
+            $node->method('getStartLine')->willReturn($line);
+            return $node;
+        };
+
+        $file1 = 'file1.php';
+        $file2 = 'file2.php';
+
+        $content = array(
+            $file1 => array($createNode(ASTMethod::class, 1), $createNode(ASTFunction::class, 5)),
+            $file2 => array($createNode(ASTMethod::class, 7), $createNode(ASTMethod::class, 2))
+        );
+
+        $expectedResult = array(
+            $file1 => array(new LineComplexity(1, $ccn), new LineComplexity(5, $ccn)),
+            $file2 => array(new LineComplexity(7, $ccn), new LineComplexity(2, $ccn))
+        );
+
+        $result = contentToFileComplexities($content, $cyclomaticAnalyzer);
+        $this->assertEquals($expectedResult, $result);
     }
 }
