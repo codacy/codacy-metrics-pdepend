@@ -20,7 +20,7 @@ function filesFromConfiguration()
             if (json_last_error() === JSON_ERROR_NONE && property_exists($codacyrc, 'files')) {
                 $files = $codacyrc->{'files'};
                 foreach ($files as $file) {
-                    yield join('/', array($srcdir, $file));
+                    yield join('/', [$srcdir, $file]);
                 }
                 return;
             }

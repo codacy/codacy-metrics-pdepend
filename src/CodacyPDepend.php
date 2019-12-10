@@ -13,7 +13,7 @@ require_once 'CodacyResult.php';
 
 function arraysOfTuplesToMap(&...$arraysOfTuples)
 {
-    $res = array();
+    $res = [];
     foreach ($arraysOfTuples as $arrayOfTuples) {
         foreach ($arrayOfTuples as [$key, $value]) {
             $res[$key] = array_key_exists($key, $res) ? array_merge($res[$key], $value) : $value;
@@ -31,22 +31,22 @@ function getFilename($content)
 function filenameToFunctions($node)
 {
     foreach ($node->getFunctions() as $function) {
-        yield array(getFilename($function), array($function));
+        yield [getFilename($function), [$function]];
     }
 }
 
 function filenameToMethods($node)
 {
     foreach ($node->getClasses() as $class) {
-        yield array(getFilename($class), $class->getMethods());
+        yield [getFilename($class), $class->getMethods()];
     }
 }
 
 function contentToFileComplexities($content, CyclomaticComplexityAnalyzer $cyclomaticAnalyzer)
 {
-    $res = array();
+    $res = [];
     foreach ($content as $file => $nodes) {
-        $res[$file] = array();
+        $res[$file] = [];
         foreach ($nodes as $node) {
             $ccn = $cyclomaticAnalyzer->getCcn($node);
             $line = $node->getStartLine();
@@ -56,13 +56,18 @@ function contentToFileComplexities($content, CyclomaticComplexityAnalyzer $cyclo
     return $res;
 }
 
+function valueOrZero($key, $array)
+{
+    return array_key_exists($key, $array) ? $array[$key] : 0;
+}
+
 function filesToNrClasses($result)
 {
-    $res = array();
+    $res = [];
     foreach ($result as $node) {
         foreach ($node->getClasses() as $class) {
             $file = getFilename($class);
-            $res[$file] = ($res[$file] ?: 0) + 1;
+            $res[$file] = valueOrZero($file, $res) + 1;
         }
     }
     return $res;
@@ -70,15 +75,15 @@ function filesToNrClasses($result)
 
 function filesToNrMethods($result)
 {
-    $res = array();
+    $res = [];
     foreach ($result as $node) {
         foreach ($node->getClasses() as $class) {
             $file = getFilename($class);
-            $res[$file] = ($res[$file] ?: 0) + $class->getMethods()->count();
+            $res[$file] = valueOrZero($file, $res) + $class->getMethods()->count();
         }
         foreach ($node->getFunctions() as $function) {
             $file = getFilename($function);
-            $res[$file] = ($res[$file] ?: 0) + 1;
+            $res[$file] = valueOrZero($file, $res) + 1;
         }
     }
     return $res;
@@ -106,7 +111,7 @@ function filesToNodeMetrics($result, NodeLocAnalyzer $nodeLocAnalyzer)
  */
 function resultToContent($result)
 {
-    $resultArrays = array();
+    $resultArrays = [];
     foreach ($result as $node) {
         array_push($resultArrays, filenameToMethods($node));
         array_push($resultArrays, filenameToFunctions($node));

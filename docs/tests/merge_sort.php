@@ -14,7 +14,7 @@ function merge_sort($my_array)
 // #LineComplexity: 5
 function merge($left, $right)
 {
-    $res = array();
+    $res = [];
     while (count($left) > 0 && count($right) > 0) {
         if ($left[0] > $right[0]) {
             $res[] = $right[0];
@@ -34,7 +34,7 @@ function merge($left, $right)
     }
     return $res;
 }
-$test_array = array(100, 54, 7, 2, 5, 4, 1);
+$test_array = [100, 54, 7, 2, 5, 4, 1];
 echo "Original Array : ";
 echo implode(', ', $test_array);
 echo "\nSorted Array :";

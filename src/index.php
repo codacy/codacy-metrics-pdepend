@@ -28,7 +28,7 @@ try {
     $fileToLineComplexities = contentToFileComplexities($content, $cyclomaticAnalyzer);
     $filesWithResults = array_unique(array_merge(array_keys($filesToNrClasses), (array_keys($filesToNrMethods))));
     foreach ($filesWithResults as $file) {
-        $lineComplexities = $fileToLineComplexities[$file] ?: array();
+        $lineComplexities = $fileToLineComplexities[$file] ?: [];
         $complexity = empty($lineComplexities) ? 0 : max(array_map(
             fn ($lineComplexity) => $lineComplexity->getValue(),
             $lineComplexities

@@ -10,44 +10,46 @@ use PDepend\Source\AST\ASTCompilationUnit;
 use PDepend\Source\AST\ASTFunction;
 use PDepend\Source\AST\ASTMethod;
 use PDepend\Source\AST\ASTNamespace;
-use PDepend\Source\AST\ASTNode;
 use PHPUnit\Framework\TestCase;
 
 final class CodacyPDependTest extends TestCase
 {
+    private $file1 = 'file1.php';
+    private $file2 = 'file2.php';
+
     function testArraysOfTuplesToMap()
     {
-        $input1 = array(
-            array("abc", array(1, 2)),
-            array("b", array(1)),
-            array("b", array(2))
-        );
+        $input1 = [
+            ["abc", [1, 2]],
+            ["b", [1]],
+            ["b", [2]]
+        ];
 
-        $input2 = array(
-            array("a", array(1, 2)),
-            array("abc", array(3)),
-            array("b", array(7))
-        );
+        $input2 = [
+            ["a", [1, 2]],
+            ["abc", [3]],
+            ["b", [7]]
+        ];
 
-        $expectedResult = array(
-            "a" => array(1, 2),
-            "abc" => array(1, 2, 3),
-            "b" => array(1, 2, 7)
-        );
+        $expectedResult = [
+            "a" => [1, 2],
+            "abc" => [1, 2, 3],
+            "b" => [1, 2, 7]
+        ];
         $result = arraysOfTuplesToMap($input1, $input2);
         $this->assertEquals($result, $expectedResult);
     }
 
     function testArraysOfTuplesToMapDuplicatedValues()
     {
-        $input = array(
-            array("a", array(1, 2)),
-            array("a", array(1, 2))
-        );
+        $input = [
+            ["a", [1, 2]],
+            ["a", [1, 2]]
+        ];
 
-        $expectedResult = array(
-            "a" => array(1, 2, 1, 2)
-        );
+        $expectedResult = [
+            "a" => [1, 2, 1, 2]
+        ];
         $result = arraysOfTuplesToMap($input);
         $this->assertEquals($result, $expectedResult);
     }
@@ -62,30 +64,27 @@ final class CodacyPDependTest extends TestCase
             $f->method('getName')->willReturn($name);
             return $f;
         };
-
-        $file1 = 'file1.php';
-        $file2 = 'file2.php';
         $f1 = 'f1';
         $f2 = 'f2';
         $f3 = 'f3';
-        $function1 = $createFunction($f1, $file1);
-        $function2 = $createFunction($f2, $file1);
-        $function3 = $createFunction($f3, $file2);
+        $function1 = $createFunction($f1, $this->file1);
+        $function2 = $createFunction($f2, $this->file1);
+        $function3 = $createFunction($f3, $this->file2);
         $astNamespaceMock = $this->createMock(ASTNamespace::class);
-        $astNamespaceMock->method('getFunctions')->willReturn(array($function1, $function2, $function3));
+        $astNamespaceMock->method('getFunctions')->willReturn([$function1, $function2, $function3]);
 
-        $expectedResult = array(
-            array($file1, array($f1)),
-            array($file1, array($f2)),
-            array($file2, array($f3))
-        );
+        $expectedResult = [
+            [$this->file1, [$f1]],
+            [$this->file1, [$f2]],
+            [$this->file2, [$f3]]
+        ];
 
         $result = iterator_to_array(filenameToFunctions($astNamespaceMock));
         $resultWithFunctionNames = array_map(
-            fn ($t) => array($t[0], array_map(
+            fn ($t) => [$t[0], array_map(
                 fn ($e) => $e->getName(),
                 $t[1]
-            )),
+            )],
             $result
         );
         $this->assertEquals($expectedResult, $resultWithFunctionNames);
@@ -98,41 +97,40 @@ final class CodacyPDependTest extends TestCase
         return $method;
     }
 
+    function createClass($filename, $methods = [])
+    {
+        $compilationUnit = $this->createMock(ASTCompilationUnit::class);
+        $compilationUnit->method('getFileName')->willReturn($filename);
+        $class = $this->createMock(ASTClass::class);
+        $class->method('getCompilationUnit')->willReturn($compilationUnit);
+        $class->method('getMethods')->willReturn($methods);
+        return $class;
+    }
+
     function testFilenameToMethods()
     {
-        $createClass = function ($methods, $filename) {
-            $compilationUnit = $this->createMock(ASTCompilationUnit::class);
-            $compilationUnit->method('getFileName')->willReturn($filename);
-            $class = $this->createMock(ASTClass::class);
-            $class->method('getCompilationUnit')->willReturn($compilationUnit);
-            $class->method('getMethods')->willReturn($methods);
-            return $class;
-        };
-
-        $file1 = 'file1.php';
-        $file2 = 'file2.php';
         $m1 = 'm1';
         $m2 = 'm2';
         $m3 = 'm3';
         $method1 = $this->createMethod($m1);
         $method2 = $this->createMethod($m2);
         $method3 = $this->createMethod($m3);
-        $class1 = $createClass(array($method1, $method2), $file1);
-        $class2 = $createClass(array($method3), $file2);
+        $class1 = $this->createClass($this->file1, [$method1, $method2]);
+        $class2 = $this->createClass($this->file2, [$method3]);
         $astNamespaceMock = $this->createMock(ASTNamespace::class);
-        $astNamespaceMock->method('getClasses')->willReturn(array($class1, $class2));
+        $astNamespaceMock->method('getClasses')->willReturn([$class1, $class2]);
 
-        $expectedResult = array(
-            array($file1, array($m1, $m2)),
-            array($file2, array($m3))
-        );
+        $expectedResult = [
+            [$this->file1, [$m1, $m2]],
+            [$this->file2, [$m3]]
+        ];
 
         $result = iterator_to_array(filenameToMethods($astNamespaceMock));
         $resultWithMethodNames = array_map(
-            fn ($t) => array($t[0], array_map(
+            fn ($t) => [$t[0], array_map(
                 fn ($e) => $e->getName(),
                 $t[1]
-            )),
+            )],
             $result
         );
         $this->assertEquals($expectedResult, $resultWithMethodNames);
@@ -150,20 +148,57 @@ final class CodacyPDependTest extends TestCase
             return $node;
         };
 
-        $file1 = 'file1.php';
-        $file2 = 'file2.php';
+        $content = [
+            $this->file1 => [$createNode(ASTMethod::class, 1), $createNode(ASTFunction::class, 5)],
+            $this->file2 => [$createNode(ASTMethod::class, 7), $createNode(ASTMethod::class, 2)]
+        ];
 
-        $content = array(
-            $file1 => array($createNode(ASTMethod::class, 1), $createNode(ASTFunction::class, 5)),
-            $file2 => array($createNode(ASTMethod::class, 7), $createNode(ASTMethod::class, 2))
-        );
-
-        $expectedResult = array(
-            $file1 => array(new LineComplexity(1, $ccn), new LineComplexity(5, $ccn)),
-            $file2 => array(new LineComplexity(7, $ccn), new LineComplexity(2, $ccn))
-        );
+        $expectedResult = [
+            $this->file1 => [new LineComplexity(1, $ccn), new LineComplexity(5, $ccn)],
+            $this->file2 => [new LineComplexity(7, $ccn), new LineComplexity(2, $ccn)]
+        ];
 
         $result = contentToFileComplexities($content, $cyclomaticAnalyzer);
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    function testFilesToNrClasses()
+    {
+        $classes = [
+            $this->createClass($this->file1),
+            $this->createClass($this->file2),
+            $this->createClass($this->file2),
+        ];
+
+        $namespace = $this->createMock(ASTNamespace::class);
+        $namespace->method('getClasses')->willReturn($classes);
+
+        $expectedResult = [
+            $this->file1 => 1,
+            $this->file2 => 2
+        ];
+
+        $result = filesToNrClasses([$namespace]);
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    function testFilesToNrMethods()
+    {
+        $classes = [
+            $this->createClass($this->file1, [$this->createMethod("m1")]),
+            $this->createClass($this->file2, [$this->createMethod("m1"), $this->createMethod("m2")]),
+            $this->createClass($this->file2, [$this->createMethod("m1"), $this->createMethod("m3"), $this->createMethod("m3")]),
+        ];
+
+        $namespace = $this->createMock(ASTNamespace::class);
+        $namespace->method('getClasses')->willReturn($classes);
+
+        $expectedResult = [
+            $this->file1 => 1,
+            $this->file2 => 2
+        ];
+
+        $result = filesToNrClasses([$namespace]);
         $this->assertEquals($expectedResult, $result);
     }
 }

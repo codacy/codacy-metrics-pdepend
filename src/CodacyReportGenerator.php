@@ -24,10 +24,10 @@ class CodacyReportGenerator implements ReportGenerator
 
     public function getAcceptedAnalyzers()
     {
-        return array(
+        return [
             'pdepend.analyzer.cyclomatic_complexity',
             'pdepend.analyzer.node_loc'
-        );
+        ];
     }
 
     public function log(Analyzer $analyzer)
