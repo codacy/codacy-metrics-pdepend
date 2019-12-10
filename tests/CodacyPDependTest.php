@@ -4,8 +4,10 @@ namespace Codacy\PDepend;
 
 require_once __DIR__ . '/../src/CodacyPDepend.php';
 
+use PDepend\Source\AST\ASTClass;
 use PDepend\Source\AST\ASTCompilationUnit;
 use PDepend\Source\AST\ASTFunction;
+use PDepend\Source\AST\ASTMethod;
 use PDepend\Source\AST\ASTNamespace;
 use PHPUnit\Framework\TestCase;
 
@@ -84,7 +86,52 @@ final class CodacyPDependTest extends TestCase
             )),
             $result
         );
-        $this->assertEquals(count($result), 3);
         $this->assertEquals($expectedResult, $resultWithFunctionNames);
+    }
+
+    function testFilenameToMethods()
+    {
+        $createMethod = function ($name) {
+            $method = $this->createMock(ASTMethod::class);
+            $method->method('getName')->willReturn($name);
+            return $method;
+        };
+
+        $createClass = function ($methods, $filename) {
+            $compilationUnit = $this->createMock(ASTCompilationUnit::class);
+            $compilationUnit->method('getFileName')->willReturn($filename);
+            $class = $this->createMock(ASTClass::class);
+            $class->method('getCompilationUnit')->willReturn($compilationUnit);
+            $class->method('getMethods')->willReturn($methods);
+            return $class;
+        };
+
+        $file1 = 'file1.php';
+        $file2 = 'file2.php';
+        $m1 = 'm1';
+        $m2 = 'm2';
+        $m3 = 'm3';
+        $method1 = $createMethod($m1);
+        $method2 = $createMethod($m2);
+        $method3 = $createMethod($m3);
+        $class1 = $createClass(array($method1, $method2), $file1);
+        $class2 = $createClass(array($method3), $file2);
+        $astNamespaceMock = $this->createMock(ASTNamespace::class);
+        $astNamespaceMock->method('getClasses')->willReturn(array($class1, $class2));
+
+        $expectedResult = array(
+            array($file1, array($m1, $m2)),
+            array($file2, array($m3))
+        );
+
+        $result = iterator_to_array(filenameToMethods($astNamespaceMock));
+        $resultWithMethodNames = array_map(
+            fn ($t) => array($t[0], array_map(
+                fn ($e) => $e->getName(),
+                $t[1]
+            )),
+            $result
+        );
+        $this->assertEquals($expectedResult, $resultWithMethodNames);
     }
 }
