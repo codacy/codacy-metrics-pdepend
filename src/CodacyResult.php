@@ -33,14 +33,18 @@ class CodacyResult implements \JsonSerializable
 {
     private $filename;
     private $complexity;
+    private $loc;
+    private $cloc;
     private $nrMethods;
     private $nrClasses;
     private $lineComplexities;
 
-    function __construct($filename, $complexity, $nrMethods, $nrClasses, $lineComplexities)
+    function __construct($filename, $complexity, $loc, $cloc, $nrMethods, $nrClasses, $lineComplexities)
     {
         $this->filename = $filename;
         $this->complexity = $complexity;
+        $this->loc = $loc;
+        $this->cloc = $cloc;
         $this->nrMethods = $nrMethods;
         $this->nrClasses = $nrClasses;
         $this->lineComplexities = $lineComplexities;

@@ -9,33 +9,38 @@ function stringEndsWith($str, $test)
     return substr_compare($str, $test, -strlen($test)) === 0;
 }
 
-function addDirectoryRecursively(Engine $engine, string $dir)
+function filesFromConfiguration()
 {
-    $rii = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir));
-    foreach ($rii as $file) {
-        if ($file->isDir()) {
-            continue;
+    $generator = function () {
+        $srcdir = '/src';
+        $codacyrcName = "/.codacyrc";
+        if (file_exists($codacyrcName)) {
+            $codacyrcFile = file_get_contents($codacyrcName);
+            $codacyrc = json_decode($codacyrcFile);
+            if (json_last_error() === JSON_ERROR_NONE && property_exists($codacyrc, 'files')) {
+                $files = $codacyrc->{'files'};
+                foreach ($files as $file) {
+                    yield join('/', array($srcdir, $file));
+                }
+                return;
+            }
         }
-        $filename = $file->getPathname();
-        if (stringEndsWith($filename, ".php"))
-            $engine->addFile($file->getPathname());
-    }
+        $rii = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($srcdir));
+        foreach ($rii as $file) {
+            if ($file->isDir()) {
+                continue;
+            }
+            $filename = $file->getPathname();
+            if (stringEndsWith($filename, ".php"))
+                yield $file->getPathname();
+        }
+    };
+    return iterator_to_array($generator());
 }
 
-function addFilesFromConfiguration(Engine $engine)
+function addFilesToEngine(Engine $engine, $files)
 {
-    $srcdir = '/src';
-    $codacyrcName = "/.codacyrc";
-    if (file_exists($codacyrcName)) {
-        $codacyrcFile = file_get_contents($codacyrcName);
-        $codacyrc = json_decode($codacyrcFile);
-        if (json_last_error() === JSON_ERROR_NONE && property_exists($codacyrc, 'files')) {
-            $files = $codacyrc->{'files'};
-            foreach ($files as $file) {
-                $engine->addFile(join('/', array($srcdir, $file)));
-            }
-            return;
-        }
+    foreach ($files as $file) {
+        $engine->addFile($file);
     }
-    addDirectoryRecursively($engine, $srcdir);
 }

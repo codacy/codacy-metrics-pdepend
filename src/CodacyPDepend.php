@@ -2,6 +2,10 @@
 
 namespace Codacy\PDepend;
 
+use PDepend\Metrics\Analyzer\CyclomaticComplexityAnalyzer;
+use PDepend\Metrics\Analyzer\NodeLocAnalyzer;
+use PDepend\Source\AST\ASTCompilationUnit;
+
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once 'CodacyConfiguration.php';
 require_once 'CodacyReportGenerator.php';
@@ -38,7 +42,7 @@ function filenameToMethods($node)
     }
 }
 
-function contentToFileComplexities($content, $cyclomaticAnalyzer)
+function contentToFileComplexities($content, CyclomaticComplexityAnalyzer $cyclomaticAnalyzer)
 {
     $res = array();
     foreach ($content as $file => $nodes) {
@@ -78,6 +82,23 @@ function filesToNrMethods($result)
         }
     }
     return $res;
+}
+
+function filesToNodeMetrics($result, NodeLocAnalyzer $nodeLocAnalyzer)
+{
+    $generator = function () use ($result, $nodeLocAnalyzer) {
+        foreach ($result as $node) {
+            foreach ($node->getClasses() as $class) {
+                $file = $class->getCompilationUnit();
+                yield $file->getFileName() => $nodeLocAnalyzer->getNodeMetrics($file);
+            }
+            foreach ($node->getFunctions() as $function) {
+                $file = $function->getCompilationUnit();
+                yield $file->getFileName() => $nodeLocAnalyzer->getNodeMetrics($file);
+            }
+        }
+    };
+    return iterator_to_array($generator());
 }
 /**
  * Creates 
