@@ -16,8 +16,7 @@ try {
     $engine = $app->getEngine();
     $codacyReportGenerator = new CodacyReportGenerator();
     $engine->addReportGenerator($codacyReportGenerator);
-    $files = filesFromConfiguration();
-    addFilesToEngine($engine, $files);
+    addFilesToEngine($engine, filesFromConfiguration());
     $result = $engine->analyze();
     $cyclomaticAnalyzer = $codacyReportGenerator->getCyclomaticComplexityAnalyzer();
     $nodeLocAnalyzer = $codacyReportGenerator->getNodeLocAnalyzer();
@@ -27,10 +26,9 @@ try {
 
     $content = resultToContent($result);
     $fileToLineComplexities = contentToFileComplexities($content, $cyclomaticAnalyzer);
-
-    foreach ($files as $file) {
+    $filesWithResults = array_unique(array_merge(array_keys($filesToNrClasses), (array_keys($filesToNrMethods))));
+    foreach ($filesWithResults as $file) {
         $lineComplexities = $fileToLineComplexities[$file] ?: array();
-
         $complexity = empty($lineComplexities) ? 0 : max(array_map(
             fn ($lineComplexity) => $lineComplexity->getValue(),
             $lineComplexities
@@ -43,7 +41,7 @@ try {
 
         $fileRelativeToSrc = stripStringPrefix($file, "/src/");
 
-        $codacyResult = new CodacyResult($fileRelativeToSrc, $complexity, $loc, $cloc, $nrMethods, $nrClasses, $fileToLineComplexities[$file]);
+        $codacyResult = new CodacyResult($fileRelativeToSrc, $complexity, $loc, $cloc, $nrMethods, $nrClasses, $lineComplexities);
         print(json_encode($codacyResult, JSON_UNESCAPED_SLASHES) . PHP_EOL);
     }
 } catch (\Exception $e) {
