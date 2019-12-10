@@ -45,7 +45,7 @@ try {
         print(json_encode($codacyResult, JSON_UNESCAPED_SLASHES) . PHP_EOL);
     }
 } catch (\Exception $e) {
-    print($e->getMessage() . PHP_EOL);
-    print($e->getTraceAsString() . PHP_EOL);
+    fwrite(STDERR, $e->getMessage() . PHP_EOL);
+    fwrite(STDERR, $e->getTraceAsString() . PHP_EOL);
     exit(1);
 }
