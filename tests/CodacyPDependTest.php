@@ -57,18 +57,19 @@ final class CodacyPDependTest extends TestCase
         return $res;
     }
 
-    function testArraysOfTuplesToMap()
+    function testarrayOfArraysOfTuplesToMap()
     {
-        $input1 = [
-            ["abc", [1, 2]],
-            ["b", [1]],
-            ["b", [2]]
-        ];
-
-        $input2 = [
-            ["a", [1, 2]],
-            ["abc", [3]],
-            ["b", [7]]
+        $input = [
+            [
+                ["abc", [1, 2]],
+                ["b", [1]],
+                ["b", [2]]
+            ],
+            [
+                ["a", [1, 2]],
+                ["abc", [3]],
+                ["b", [7]]
+            ]
         ];
 
         $expectedResult = [
@@ -76,21 +77,23 @@ final class CodacyPDependTest extends TestCase
             "abc" => [1, 2, 3],
             "b" => [1, 2, 7]
         ];
-        $result = arraysOfTuplesToMap($input1, $input2);
+        $result = arrayOfArraysOfTuplesToMap($input);
         $this->assertEquals($result, $expectedResult);
     }
 
-    function testArraysOfTuplesToMapDuplicatedValues()
+    function testarrayOfArraysOfTuplesToMapDuplicatedValues()
     {
         $input = [
-            ["a", [1, 2]],
-            ["a", [1, 2]]
+            [
+                ["a", [1, 2]],
+                ["a", [1, 2]]
+            ]
         ];
 
         $expectedResult = [
             "a" => [1, 2, 1, 2]
         ];
-        $result = arraysOfTuplesToMap($input);
+        $result = arrayOfArraysOfTuplesToMap($input);
         $this->assertEquals($result, $expectedResult);
     }
 
@@ -236,10 +239,12 @@ final class CodacyPDependTest extends TestCase
         $nodeLocAnalyzer = $this->createMock(NodeLocAnalyzer::class);
         $nodeLocAnalyzer->method('getNodeMetrics')->will($this->returnValueMap($parameterReturnValueMap));
 
-        $namespace1 = $this->createNamespace([$c], []);
-        $namespace2 = $this->createNamespace([], [$f]);
+        $namespaces = [
+            $this->createNamespace([$c], []),
+            $this->createNamespace([], [$f])
+        ];
 
-        $result = filesToNodeMetrics([$namespace1, $namespace2], $nodeLocAnalyzer);
+        $result = filesToNodeMetrics($namespaces, $nodeLocAnalyzer);
 
         $expectedResult = [
             $this->file1 => $metricsFile1,
@@ -247,5 +252,29 @@ final class CodacyPDependTest extends TestCase
         ];
 
         $this->assertEquals($expectedResult, $result);
+    }
+
+    function testResultToContent()
+    {
+        $f = $this->createFunction('f1', $this->file1);
+        $m = $this->createMethod('m');
+        $c = $this->createClass($this->file2, [$m]);
+
+        $namespaces = [$this->createNamespace([$c], []), $this->createNamespace([], [$f])];
+
+        $result = resultToContent($namespaces);
+
+        $expectedResult = [
+            $this->file1 => [$f],
+            $this->file2 => [$m]
+        ];
+
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    function testStripStringPrefix()
+    {
+        $this->assertEquals("llo", stripStringPrefix("hello", "he"));
+        $this->assertEquals("Hello world!", stripStringPrefix("Hello world!", "Bye"));
     }
 }

@@ -4,17 +4,16 @@ namespace Codacy\PDepend;
 
 use PDepend\Metrics\Analyzer\CyclomaticComplexityAnalyzer;
 use PDepend\Metrics\Analyzer\NodeLocAnalyzer;
-use PDepend\Source\AST\ASTCompilationUnit;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once 'CodacyConfiguration.php';
 require_once 'CodacyReportGenerator.php';
 require_once 'CodacyResult.php';
 
-function arraysOfTuplesToMap(&...$arraysOfTuples)
+function arrayOfArraysOfTuplesToMap($arrayOfArraysOfTuples)
 {
     $res = [];
-    foreach ($arraysOfTuples as $arrayOfTuples) {
+    foreach ($arrayOfArraysOfTuples as $arrayOfTuples) {
         foreach ($arrayOfTuples as [$key, $value]) {
             $res[$key] = array_key_exists($key, $res) ? array_merge($res[$key], $value) : $value;
         }
@@ -106,8 +105,7 @@ function filesToNodeMetrics($result, NodeLocAnalyzer $nodeLocAnalyzer)
     return iterator_to_array($generator());
 }
 /**
- * Creates 
- * @param PDepend\Source\AST\ASTNamespace $result 
+ * @param \PDepend\Source\AST\ASTNamespace[] $result 
  */
 function resultToContent($result)
 {
@@ -117,7 +115,7 @@ function resultToContent($result)
             yield filenameToFunctions($node);
         }
     };
-    return arraysOfTuplesToMap(...$generator());
+    return arrayOfArraysOfTuplesToMap($generator());
 }
 
 function stripStringPrefix($str, $prefix)
