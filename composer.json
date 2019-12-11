@@ -21,6 +21,6 @@
   "scripts": {
     "test": "vendor/bin/phpunit tests",
     "format": "vendor/bin/ecs check src tests --fix --config vendor/symplify/easy-coding-standard/config/set/clean-code.yaml",
-    "check-formatting": "vendor/bin/ecs check src tests --fix --config vendor/symplify/easy-coding-standard/config/set/clean-code.yaml"
+    "check-formatting": "vendor/bin/ecs check src tests --config vendor/symplify/easy-coding-standard/config/set/clean-code.yaml"
   }
 }

@@ -57,19 +57,17 @@ final class CodacyPDependTest extends TestCase
         return $res;
     }
 
-    public function testarrayOfArraysOfTuplesToMap()
+    public function testTuplesToMapWithArrayValues()
     {
         $input = [
-            [
-                ["abc", [1, 2]],
-                ["b", [1]],
-                ["b", [2]]
-            ],
-            [
-                ["a", [1, 2]],
-                ["abc", [3]],
-                ["b", [7]]
-            ]
+            ["abc", 1],
+            ["abc", 2],
+            ["b", 1],
+            ["b", 2],
+            ["a", 1],
+            ["a", 2],
+            ["abc", 3],
+            ["b", 7]
         ];
 
         $expectedResult = [
@@ -77,23 +75,23 @@ final class CodacyPDependTest extends TestCase
             "abc" => [1, 2, 3],
             "b" => [1, 2, 7]
         ];
-        $result = arrayOfArraysOfTuplesToMap($input);
+        $result = tuplesToMapWithArrayValues($input);
         $this->assertEquals($result, $expectedResult);
     }
 
     public function testarrayOfArraysOfTuplesToMapDuplicatedValues()
     {
         $input = [
-            [
-                ["a", [1, 2]],
-                ["a", [1, 2]]
-            ]
+            ["a", 1],
+            ["a", 2],
+            ["a", 1],
+            ["a", 2]
         ];
 
         $expectedResult = [
             "a" => [1, 2, 1, 2]
         ];
-        $result = arrayOfArraysOfTuplesToMap($input);
+        $result = tuplesToMapWithArrayValues($input);
         $this->assertEquals($result, $expectedResult);
     }
 
@@ -108,17 +106,14 @@ final class CodacyPDependTest extends TestCase
         $namespace = $this->createNamespace([], [$function1, $function2, $function3]);
 
         $expectedResult = [
-            [$this->file1, [$f1]],
-            [$this->file1, [$f2]],
-            [$this->file2, [$f3]]
+            [$this->file1, $f1],
+            [$this->file1, $f2],
+            [$this->file2, $f3]
         ];
 
-        $result = iterator_to_array(filenameToFunctions($namespace));
+        $result = iterator_to_array(filenameToFunctions($namespace), false);
         $resultWithFunctionNames = array_map(
-            fn ($t) => [$t[0], array_map(
-                fn ($e) => $e->getName(),
-                $t[1]
-            )],
+            fn ($t) => [$t[0], $t[1]->getName()],
             $result
         );
         $this->assertEquals($expectedResult, $resultWithFunctionNames);
@@ -137,16 +132,14 @@ final class CodacyPDependTest extends TestCase
         $namespace = $this->createNamespace([$class1, $class2], []);
 
         $expectedResult = [
-            [$this->file1, [$m1, $m2]],
-            [$this->file2, [$m3]]
+            [$this->file1, $m1],
+            [$this->file1, $m2],
+            [$this->file2, $m3]
         ];
 
-        $result = iterator_to_array(filenameToMethods($namespace));
+        $result = iterator_to_array(filenameToMethods($namespace), false);
         $resultWithMethodNames = array_map(
-            fn ($t) => [$t[0], array_map(
-                fn ($e) => $e->getName(),
-                $t[1]
-            )],
+            fn ($t) => [$t[0], $t[1]->getName()],
             $result
         );
         $this->assertEquals($expectedResult, $resultWithMethodNames);
