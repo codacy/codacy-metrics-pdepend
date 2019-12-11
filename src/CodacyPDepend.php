@@ -111,12 +111,13 @@ function filesToNodeMetrics($result, NodeLocAnalyzer $nodeLocAnalyzer)
  */
 function resultToContent($result)
 {
-    $resultArrays = [];
-    foreach ($result as $node) {
-        array_push($resultArrays, filenameToMethods($node));
-        array_push($resultArrays, filenameToFunctions($node));
-    }
-    return arraysOfTuplesToMap(...$resultArrays);
+    $generator = function () use ($result) {
+        foreach ($result as $node) {
+            yield filenameToMethods($node);
+            yield filenameToFunctions($node);
+        }
+    };
+    return arraysOfTuplesToMap(...$generator());
 }
 
 function stripStringPrefix($str, $prefix)
