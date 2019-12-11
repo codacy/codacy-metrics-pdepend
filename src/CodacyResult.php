@@ -17,7 +17,7 @@ class LineComplexity implements \JsonSerializable
         return $this->value;
     }
 
-    function __construct($line, $value)
+    public function __construct($line, $value)
     {
         $this->line = $line;
         $this->value = $value;
@@ -39,7 +39,36 @@ class CodacyResult implements \JsonSerializable
     private $nrClasses;
     private $lineComplexities;
 
-    function __construct($filename, $complexity, $loc, $cloc, $nrMethods, $nrClasses, $lineComplexities)
+    public function getFilename()
+    {
+        return $this->filename;
+    }
+    public function getComplexity()
+    {
+        return $this->complexity;
+    }
+    public function getLoc()
+    {
+        return $this->loc;
+    }
+    public function getCloc()
+    {
+        return $this->cloc;
+    }
+    public function getNrMethods()
+    {
+        return $this->nrMethods;
+    }
+    public function getNrClasses()
+    {
+        return $this->nrClasses;
+    }
+    public function getLineComplexities()
+    {
+        return $this->lineComplexities;
+    }
+
+    public function __construct($filename, $complexity, $loc, $cloc, $nrMethods, $nrClasses, $lineComplexities)
     {
         $this->filename = $filename;
         $this->complexity = $complexity;

@@ -18,13 +18,13 @@ final class CodacyPDependTest extends TestCase
     private $file1 = 'file1.php';
     private $file2 = 'file2.php';
 
-    function createCompilationUnit($filename): ASTCompilationUnit
+    public function createCompilationUnit($filename): ASTCompilationUnit
     {
         $res = $this->createMock(ASTCompilationUnit::class);
         $res->method('getFileName')->willReturn($filename);
         return $res;
     }
-    function createFunction($name, $filename): ASTFunction
+    public function createFunction($name, $filename): ASTFunction
     {
         $compilationUnit = $this->createCompilationUnit($filename);
         $f = $this->createMock(ASTFunction::class);
@@ -33,14 +33,14 @@ final class CodacyPDependTest extends TestCase
         return $f;
     }
 
-    function createMethod($name): ASTMethod
+    public function createMethod($name): ASTMethod
     {
         $method = $this->createMock(ASTMethod::class);
         $method->method('getName')->willReturn($name);
         return $method;
     }
 
-    function createClass($filename, $methods = []): ASTClass
+    public function createClass($filename, $methods = []): ASTClass
     {
         $compilationUnit = $this->createCompilationUnit($filename);
         $class = $this->createMock(ASTClass::class);
@@ -49,7 +49,7 @@ final class CodacyPDependTest extends TestCase
         return $class;
     }
 
-    function createNamespace($classes, $functions): ASTNamespace
+    public function createNamespace($classes, $functions): ASTNamespace
     {
         $res = $this->createMock(ASTNamespace::class);
         $res->method('getClasses')->willReturn($classes);
@@ -57,7 +57,7 @@ final class CodacyPDependTest extends TestCase
         return $res;
     }
 
-    function testarrayOfArraysOfTuplesToMap()
+    public function testarrayOfArraysOfTuplesToMap()
     {
         $input = [
             [
@@ -81,7 +81,7 @@ final class CodacyPDependTest extends TestCase
         $this->assertEquals($result, $expectedResult);
     }
 
-    function testarrayOfArraysOfTuplesToMapDuplicatedValues()
+    public function testarrayOfArraysOfTuplesToMapDuplicatedValues()
     {
         $input = [
             [
@@ -97,7 +97,7 @@ final class CodacyPDependTest extends TestCase
         $this->assertEquals($result, $expectedResult);
     }
 
-    function testFilenameToFunctions()
+    public function testFilenameToFunctions()
     {
         $f1 = 'f1';
         $f2 = 'f2';
@@ -124,7 +124,7 @@ final class CodacyPDependTest extends TestCase
         $this->assertEquals($expectedResult, $resultWithFunctionNames);
     }
 
-    function testFilenameToMethods()
+    public function testFilenameToMethods()
     {
         $m1 = 'm1';
         $m2 = 'm2';
@@ -152,7 +152,7 @@ final class CodacyPDependTest extends TestCase
         $this->assertEquals($expectedResult, $resultWithMethodNames);
     }
 
-    function testContentToFileComplexities()
+    public function testContentToFileComplexities()
     {
         $ccn = 1.0;
         $cyclomaticAnalyzer = $this->createMock(CyclomaticComplexityAnalyzer::class);
@@ -178,7 +178,7 @@ final class CodacyPDependTest extends TestCase
         $this->assertEquals($expectedResult, $result);
     }
 
-    function testFilesToNrClasses()
+    public function testFilesToNrClasses()
     {
         $namespacesClasses = [
             [
@@ -200,7 +200,7 @@ final class CodacyPDependTest extends TestCase
         $this->assertEquals($expectedResult, $result);
     }
 
-    function testFilesToNrMethods()
+    public function testFilesToNrMethods()
     {
         $namespacesClasses = [
             [
@@ -223,7 +223,7 @@ final class CodacyPDependTest extends TestCase
         $this->assertEquals($expectedResult, $result);
     }
 
-    function testFilesToNodeMetrics()
+    public function testFilesToNodeMetrics()
     {
         $f = $this->createFunction('f1', $this->file1);
         $c = $this->createClass($this->file2);
@@ -254,7 +254,7 @@ final class CodacyPDependTest extends TestCase
         $this->assertEquals($expectedResult, $result);
     }
 
-    function testResultToContent()
+    public function testResultToContent()
     {
         $f = $this->createFunction('f1', $this->file1);
         $m = $this->createMethod('m');
@@ -272,7 +272,7 @@ final class CodacyPDependTest extends TestCase
         $this->assertEquals($expectedResult, $result);
     }
 
-    function testStripStringPrefix()
+    public function testStripStringPrefix()
     {
         $this->assertEquals("llo", stripStringPrefix("hello", "he"));
         $this->assertEquals("Hello world!", stripStringPrefix("Hello world!", "Bye"));

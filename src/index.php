@@ -26,7 +26,7 @@ try {
 
     $content = resultToContent($result);
     $fileToLineComplexities = contentToFileComplexities($content, $cyclomaticAnalyzer);
-    $filesWithResults = array_unique(array_merge(array_keys($filesToNrClasses), (array_keys($filesToNrMethods))));
+    $filesWithResults = array_unique(array_merge(array_keys($filesToNrClasses), array_keys($filesToNrMethods)));
     foreach ($filesWithResults as $file) {
         $lineComplexities = $fileToLineComplexities[$file] ?: [];
         $complexity = empty($lineComplexities) ? 0 : max(array_map(
@@ -42,7 +42,7 @@ try {
         $fileRelativeToSrc = stripStringPrefix($file, "/src/");
 
         $codacyResult = new CodacyResult($fileRelativeToSrc, $complexity, $loc, $cloc, $nrMethods, $nrClasses, $lineComplexities);
-        print(json_encode($codacyResult, JSON_UNESCAPED_SLASHES) . PHP_EOL);
+        print json_encode($codacyResult, JSON_UNESCAPED_SLASHES) . PHP_EOL;
     }
 } catch (\Exception $e) {
     fwrite(STDERR, $e->getMessage() . PHP_EOL);

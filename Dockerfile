@@ -10,7 +10,7 @@ RUN composer install
 COPY src src
 COPY tests tests
 
-RUN ./vendor/bin/phpunit tests
+RUN composer test && composer check-formatting
 
 RUN composer install --no-dev
 

@@ -105,7 +105,7 @@ function filesToNodeMetrics($result, NodeLocAnalyzer $nodeLocAnalyzer)
     return iterator_to_array($generator());
 }
 /**
- * @param \PDepend\Source\AST\ASTNamespace[] $result 
+ * @param \PDepend\Source\AST\ASTNamespace[] $result
  */
 function resultToContent($result)
 {

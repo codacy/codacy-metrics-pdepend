@@ -35,12 +35,15 @@ class CodacyReportGenerator implements ReportGenerator
         if ($analyzer instanceof CyclomaticComplexityAnalyzer) {
             $this->cyclomaticComplexityAnalyzer = $analyzer;
             return true;
-        } else if ($analyzer instanceof NodeLocAnalyzer) {
+        } elseif ($analyzer instanceof NodeLocAnalyzer) {
             $this->nodeLocAnalyzer = $analyzer;
             return true;
-        } else return false;
+        } else {
+            return false;
+        }
     }
 
     public function close()
-    { }
+    {
+    }
 }

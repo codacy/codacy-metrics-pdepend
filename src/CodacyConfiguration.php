@@ -30,8 +30,9 @@ function filesFromConfiguration()
             continue;
         }
         $filename = $file->getPathname();
-        if (stringEndsWith($filename, ".php"))
+        if (stringEndsWith($filename, ".php")) {
             yield $file->getPathname();
+        }
     }
 }
 
