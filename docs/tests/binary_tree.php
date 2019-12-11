@@ -1,33 +1,33 @@
 <?php
+// #Metrics: {"complexity": 4, "loc": 36, "cloc": 9, "nrMethods": 2, "nrClasses": 1}
 class BinaryTree
 {
-    public function insert($item) {
+    // #LineComplexity: 2
+    public function insert($item)
+    {
         $node = new BinaryNode($item);
         if ($this->isEmpty()) {
             // special case if tree is empty
             $this->root = $node;
-        }
-        else {
+        } else {
             // insert the node somewhere in the tree starting at the root
             $this->insertNode($node, $this->root);
         }
     }
-
-    protected function insertNode($node, &$subtree) {
+    // #LineComplexity: 4
+    protected function insertNode($node, &$subtree)
+    {
         if ($subtree === null) {
             // insert node here if subtree is empty
             $subtree = $node;
-        }
-        else {
+        } else {
             if ($node->value > $subtree->value) {
                 // keep trying to insert right
                 $this->insertNode($node, $subtree->right);
-            }
-            else if ($node->value < $subtree->value) {
+            } else if ($node->value < $subtree->value) {
                 // keep trying to insert left
                 $this->insertNode($node, $subtree->left);
-            }
-            else {
+            } else {
                 // reject duplicates
             }
         }
