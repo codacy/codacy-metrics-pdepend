@@ -10,13 +10,14 @@ require_once 'CodacyConfiguration.php';
 require_once 'CodacyReportGenerator.php';
 require_once 'CodacyResult.php';
 
-function arrayOfArraysOfTuplesToMap($arrayOfArraysOfTuples)
+function tuplesToMapWithArrayValues($arrayOfTuples)
 {
     $res = [];
-    foreach ($arrayOfArraysOfTuples as $arrayOfTuples) {
-        foreach ($arrayOfTuples as [$key, $value]) {
-            $res[$key] = array_key_exists($key, $res) ? array_merge($res[$key], $value) : $value;
-        }
+    foreach ($arrayOfTuples as [$key, $value]) {
+        if (array_key_exists($key, $res))
+            array_push($res[$key], $value);
+        else
+            $res[$key] = [$value];
     }
     return $res;
 }
@@ -26,18 +27,24 @@ function getFilename($content)
     $comp_unit = $content->getCompilationUnit();
     return $comp_unit->getFileName();
 }
-
-function filenameToFunctions($node)
+/**
+ * @param \PDepend\Source\AST\ASTNamespace $namespace
+ */
+function filenameToFunctions($namespace)
 {
-    foreach ($node->getFunctions() as $function) {
-        yield [getFilename($function), [$function]];
+    foreach ($namespace->getFunctions() as $function) {
+        yield [getFilename($function), $function];
     }
 }
-
-function filenameToMethods($node)
+/**
+ * @param \PDepend\Source\AST\ASTNamespace $namespace
+ */
+function filenameToMethods($namespace)
 {
-    foreach ($node->getClasses() as $class) {
-        yield [getFilename($class), $class->getMethods()];
+    foreach ($namespace->getClasses() as $class) {
+        foreach ($class->getMethods() as $method) {
+            yield [getFilename($class), $method];
+        }
     }
 }
 
@@ -111,11 +118,11 @@ function resultToContent($result)
 {
     $generator = function () use ($result) {
         foreach ($result as $node) {
-            yield filenameToMethods($node);
-            yield filenameToFunctions($node);
+            yield from filenameToMethods($node);
+            yield from filenameToFunctions($node);
         }
     };
-    return arrayOfArraysOfTuplesToMap($generator());
+    return tuplesToMapWithArrayValues($generator());
 }
 
 function stripStringPrefix($str, $prefix)
