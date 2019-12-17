@@ -1,5 +1,5 @@
 <?php
-// #Metrics: {"complexity": 5, "loc": 42, "cloc": 3, "nrMethods": 2, "nrClasses": 0}
+// #Metrics: {"complexity": 5, "loc": 38, "cloc": 3, "nrMethods": 2, "nrClasses": 0}
 // #LineComplexity: 2
 function merge_sort($my_array)
 {

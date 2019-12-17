@@ -36,7 +36,7 @@ try {
         $nrClasses = $filesToNrClasses[$file] ?: 0;
         $nrMethods = $filesToNrMethods[$file] ?: 0;
 
-        $loc = $nodeMetrics[$file]["loc"] ?: 0;
+        $loc = $nodeMetrics[$file]["eloc"] ?: 0;
         $cloc = $nodeMetrics[$file]["cloc"] ?: 0;
 
         $fileRelativeToSrc = stripStringPrefix($file, "/src/");

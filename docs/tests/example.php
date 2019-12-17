@@ -1,5 +1,5 @@
 <?php
-// #Metrics: {"complexity": 1, "loc": 47, "cloc": 5, "nrMethods": 4, "nrClasses": 2}
+// #Metrics: {"complexity": 1, "loc": 33, "cloc": 5, "nrMethods": 4, "nrClasses": 2}
 
 // #LineComplexity: 1
 function antiSpam($email)
