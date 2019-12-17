@@ -1,5 +1,5 @@
 <?php
-// #Metrics: {"complexity": 4, "loc": 36, "cloc": 9, "nrMethods": 2, "nrClasses": 1}
+// #Metrics: {"complexity": 4, "loc": 26, "cloc": 9, "nrMethods": 2, "nrClasses": 1}
 class BinaryTree
 {
     // #LineComplexity: 2
