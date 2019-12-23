@@ -1,13 +1,12 @@
 version: 2.1
 
 orbs:
-  codacy: codacy/base@1.0.2
+  codacy: codacy/base@1.2.1
   codacy_plugins_test: codacy/plugins-test@0.6.6
 
 jobs:
   test_publish_local:
-    machine:
-      image: ubuntu-1604:201903-01
+    machine: true
     working_directory: ~/workdir
     steps:
       - attach_workspace:
