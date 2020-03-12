@@ -1,7 +1,7 @@
 # codacy-metrics-pdepend
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/340bcc650709447c9fc394e00ae81b67)](https://www.codacy.com/app/Codacy/codacy-metrics-pdepend?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=codacy/codacy-metrics-pdepend&amp;utm_campaign=Badge_Grade)
-[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/340bcc650709447c9fc394e00ae81b67)](https://www.codacy.com/app/Codacy/codacy-metrics-pdepend?utm_source=github.com&utm_medium=referral&utm_content=codacy/codacy-metrics-pdepend&utm_campaign=Badge_Coverage)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/340bcc650709447c9fc394e00ae81b67)](https://www.codacy.com/gh/codacy/codacy-metrics-pdepend?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=codacy/codacy-metrics-pdepend&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/340bcc650709447c9fc394e00ae81b67)](https://www.codacy.com/gh/codacy/codacy-metrics-pdepend?utm_source=github.com&utm_medium=referral&utm_content=codacy/codacy-metrics-pdepend&utm_campaign=Badge_Coverage)
 [![CircleCI](https://circleci.com/gh/codacy/codacy-metrics-pdepend.svg?style=svg)](https://circleci.com/gh/codacy/codacy-metrics-pdepend)
 [![Docker Version](https://images.microbadger.com/badges/version/codacy/codacy-metrics-pdepend.svg)](https://microbadger.com/images/codacy/codacy-metrics-pdepend "Get your own version badge on microbadger.com")
 
