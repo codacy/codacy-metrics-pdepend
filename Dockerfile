@@ -6,7 +6,7 @@ RUN apk add composer
 
 COPY composer.json composer.json
 COPY composer.lock composer.lock
-RUN composer install
+RUN composer install --no-scripts
 COPY src src
 COPY tests tests
 
