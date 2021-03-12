@@ -2,7 +2,7 @@
   "name": "codacy/codacy-metrics-pdepend",
   "description": "Metrics tool for PHP based on PDepend",
   "require": {
-    "pdepend/pdepend": "2.8.0"
+    "pdepend/pdepend": "2.9.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.0",
