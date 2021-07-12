@@ -1,31 +1,20 @@
 version: 2.1
 
 orbs:
-  codacy: codacy/base@1.2.1
-  codacy_plugins_test: codacy/plugins-test@0.6.6
-
-jobs:
-  test_publish_local:
-    machine: true
-    working_directory: ~/workdir
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          command: |
-            docker build -t $CIRCLE_PROJECT_REPONAME:latest .
-            docker save --output ~/workdir/docker-image.tar $CIRCLE_PROJECT_REPONAME:latest
-      - persist_to_workspace:
-          paths:
-            - workdir/*
-          root: ~/
+  codacy: codacy/base@5.2.3
+  codacy_plugins_test: codacy/plugins-test@0.15.4
 
 workflows:
   version: 2
   compile_test_deploy:
     jobs:
       - codacy/checkout_and_version
-      - test_publish_local:
+      - codacy/shell:
+          name: publish_docker_local
+          cmd: |
+            docker build -t $CIRCLE_PROJECT_REPONAME:latest .
+            docker save --output docker-image.tar $CIRCLE_PROJECT_REPONAME:latest
+          persist_to_workspace: true
           requires:
             - codacy/checkout_and_version
       - codacy_plugins_test/run:
@@ -34,17 +23,9 @@ workflows:
           run_json_tests: false
           run_pattern_tests: false
           requires:
-            - test_publish_local
-      - codacy/shell:
-          name: publish_dockerhub
+            - publish_docker_local
+      - codacy/publish_docker:
           context: CodacyDocker
-          cmd: |
-            docker load --input ~/workdir/docker-image.tar
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker tag $CIRCLE_PROJECT_REPONAME codacy/$CIRCLE_PROJECT_REPONAME:$(cat .version)
-            docker tag $CIRCLE_PROJECT_REPONAME codacy/$CIRCLE_PROJECT_REPONAME:latest
-            docker push codacy/$CIRCLE_PROJECT_REPONAME:$(cat .version)
-            docker push codacy/$CIRCLE_PROJECT_REPONAME:latest
           requires:
             - plugins_test
           filters:
@@ -55,4 +36,4 @@ workflows:
           name: tag_version
           context: CodacyAWS
           requires:
-            - publish_dockerhub
+            - codacy/publish_docker
