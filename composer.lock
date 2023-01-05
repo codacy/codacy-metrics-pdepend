@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d81471cbee0d05e78e70429ffdd6e3cf",
+    "content-hash": "2036e44ea55b15e2bef1adc3601ddab2",
     "packages": [
         {
             "name": "pdepend/pdepend",
@@ -2361,16 +2361,16 @@
         },
         {
             "name": "symplify/easy-coding-standard",
-            "version": "10.2.6",
+            "version": "11.1.33.72",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/easy-coding-standard.git",
-                "reference": "8875d8cd438756c9719fcdcc3b7d0c1d06515dd5"
+                "reference": "5a4e3a9b8701281a7b04921deba49a866fd20d5f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/easy-coding-standard/zipball/8875d8cd438756c9719fcdcc3b7d0c1d06515dd5",
-                "reference": "8875d8cd438756c9719fcdcc3b7d0c1d06515dd5",
+                "url": "https://api.github.com/repos/symplify/easy-coding-standard/zipball/5a4e3a9b8701281a7b04921deba49a866fd20d5f",
+                "reference": "5a4e3a9b8701281a7b04921deba49a866fd20d5f",
                 "shasum": ""
             },
             "require": {
@@ -2384,11 +2384,6 @@
                 "bin/ecs"
             ],
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "9.5-dev"
-                }
-            },
             "autoload": {
                 "files": [
                     "bootstrap.php"
@@ -2398,7 +2393,7 @@
             "license": [
                 "MIT"
             ],
-            "description": "Prefixed scoped version of ECS package",
+            "description": "Use Coding Standard with 0-knowledge of PHP-CS-Fixer and PHP_CodeSniffer",
             "funding": [
                 {
                     "url": "https://www.paypal.me/rectorphp",
@@ -2409,7 +2404,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-05-17T07:11:50+00:00"
+            "time": "2023-01-03T14:12:08+00:00"
         },
         {
             "name": "theseer/tokenizer",
