@@ -2361,16 +2361,16 @@
         },
         {
             "name": "symplify/easy-coding-standard",
-            "version": "11.2.0.72",
+            "version": "11.2.2.72",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symplify/easy-coding-standard.git",
-                "reference": "be31d9b6927ef9d06c0475a66b785a79de408630"
+                "reference": "efef2606b8c1b9117aeb9d547c582eb12d66bc0a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symplify/easy-coding-standard/zipball/be31d9b6927ef9d06c0475a66b785a79de408630",
-                "reference": "be31d9b6927ef9d06c0475a66b785a79de408630",
+                "url": "https://api.github.com/repos/symplify/easy-coding-standard/zipball/efef2606b8c1b9117aeb9d547c582eb12d66bc0a",
+                "reference": "efef2606b8c1b9117aeb9d547c582eb12d66bc0a",
                 "shasum": ""
             },
             "require": {
@@ -2404,7 +2404,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-01-09T16:44:48+00:00"
+            "time": "2023-01-11T14:42:18+00:00"
         },
         {
             "name": "theseer/tokenizer",
